@@ -364,6 +364,8 @@ Planned improvements include:
 - Add configurable autoplay controls
 - Improve keyboard accessibility
 - Publish as an installable npm package
+- Create own virtualization without library
+- Create React Native compunent that will be usable for mobile application and web
 
 ---
 
