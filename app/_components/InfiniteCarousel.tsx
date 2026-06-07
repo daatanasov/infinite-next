@@ -25,7 +25,7 @@ export default function InfiniteCarousel({
   height = 240,
   width = 150,
   gap = 14,
-  speed = 0.6,
+  speed = 2,
   direction = "right",
 }: InfiniteCarouselProps) {
   const itemSize = width + gap;

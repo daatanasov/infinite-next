@@ -188,7 +188,7 @@ body {
 
 .track {
   height: 100%;
-  position: relative;
+  /* position: relative; */
   will-change: transform;
 }
 

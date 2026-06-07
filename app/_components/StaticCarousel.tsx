@@ -1,10 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import StaticCard from "./StaticCard";
 
-const LOOPS = 5;
+const LOOPS = 3;
 
 interface ImageItem {
   id: string;
@@ -31,119 +30,124 @@ export default function SmoothCarousel({
   gap = 12,
 }: SmoothCarouselProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const hoverRef = useRef(false);
+
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const offsetRef = useRef(0);
+  const lastTimeRef = useRef<number | null>(null);
+  const animFrameRef = useRef<number>(0);
+
+  const isPausedRef = useRef(false);
   const isDraggingRef = useRef(false);
-  const dragStartX = useRef(0);
-  const scrollStartX = useRef(0);
+  const dragStartXRef = useRef(0);
+  const dragOffsetAtStartRef = useRef(0);
 
-  const ORIGINAL_ITEMS = images.length;
-  const TOTAL_VIRTUAL_ITEMS = ORIGINAL_ITEMS * LOOPS;
+  const loopWidth = (width + gap) * images.length;
 
-  const getLoopWidth = useCallback(() => {
-    return (width + gap) * ORIGINAL_ITEMS;
-  }, [width, gap, ORIGINAL_ITEMS]);
+  const repeatedImages = Array.from(
+    { length: images.length * LOOPS },
+    (_, i) => images[i % images.length],
+  );
 
-  const virtualizer = useVirtualizer({
-    count: TOTAL_VIRTUAL_ITEMS,
-    horizontal: true,
-    getScrollElement: () => containerRef.current,
-    estimateSize: () => width,
-    gap,
-    overscan: ORIGINAL_ITEMS,
-    initialOffset: getLoopWidth() * 2,
-    getItemKey: (index) =>
-      `${images[index % ORIGINAL_ITEMS].id}-${Math.floor(index / ORIGINAL_ITEMS)}`,
-  });
+  const wrapOffset = useCallback(() => {
+    if (offsetRef.current >= loopWidth * 2) {
+      offsetRef.current -= loopWidth;
+    } else if (offsetRef.current < loopWidth) {
+      offsetRef.current += loopWidth;
+    }
+  }, [loopWidth]);
+
+  const applyTransform = useCallback(() => {
+    if (trackRef.current) {
+      trackRef.current.style.transform = `translateX(${-offsetRef.current}px)`;
+    }
+  }, []);
 
   useLayoutEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    el.scrollLeft = getLoopWidth() * 2;
-  }, [getLoopWidth]);
-
-  const wrapScroll = useCallback(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const loopWidth = getLoopWidth();
-
-    if (el.scrollLeft >= loopWidth * 3) {
-      el.scrollLeft -= loopWidth;
-    } else if (el.scrollLeft < loopWidth * 2) {
-      el.scrollLeft += loopWidth;
-    }
-  }, [getLoopWidth]);
+    offsetRef.current = loopWidth;
+    applyTransform();
+  }, [loopWidth, applyTransform]);
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+    const step = (timestamp: number) => {
+      if (lastTimeRef.current === null) lastTimeRef.current = timestamp;
+      const delta = Math.min(timestamp - lastTimeRef.current, 64);
+      lastTimeRef.current = timestamp;
 
-    let rafId: number;
-    const step = () => {
-      if (!hoverRef.current && !isDraggingRef.current) {
-        el.scrollLeft += direction === "right" ? speed : -speed;
-        wrapScroll();
+      if (!isPausedRef.current && !isDraggingRef.current) {
+        const frameSpeed = speed * (delta / 16.667);
+        offsetRef.current += direction === "right" ? frameSpeed : -frameSpeed;
+        wrapOffset();
+        applyTransform();
       }
-      rafId = requestAnimationFrame(step);
+
+      animFrameRef.current = requestAnimationFrame(step);
     };
 
-    rafId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(rafId);
-  }, [direction, speed, wrapScroll]);
+    animFrameRef.current = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(animFrameRef.current);
+      lastTimeRef.current = null;
+    };
+  }, [direction, speed, wrapOffset, applyTransform]);
 
   const handleMouseEnter = () => {
-    hoverRef.current = true;
+    isPausedRef.current = true;
   };
+
   const handleMouseLeave = () => {
-    hoverRef.current = false;
+    isPausedRef.current = false;
     isDraggingRef.current = false;
-    if (containerRef.current) containerRef.current.style.cursor = "grab";
+    lastTimeRef.current = null;
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
     isDraggingRef.current = true;
-    dragStartX.current = e.clientX;
-    scrollStartX.current = containerRef.current!.scrollLeft;
-    if (containerRef.current) containerRef.current.style.cursor = "grabbing";
+    dragStartXRef.current = e.clientX;
+    dragOffsetAtStartRef.current = offsetRef.current;
     e.preventDefault();
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDraggingRef.current || !containerRef.current) return;
+    if (!isDraggingRef.current) return;
     e.preventDefault();
-    containerRef.current.scrollLeft =
-      scrollStartX.current - (e.clientX - dragStartX.current);
-    wrapScroll();
+    const delta = e.clientX - dragStartXRef.current;
+    offsetRef.current = dragOffsetAtStartRef.current - delta;
+    wrapOffset();
+    applyTransform();
   };
 
   const handleMouseUp = () => {
     isDraggingRef.current = false;
-    if (containerRef.current) containerRef.current.style.cursor = "grab";
+    lastTimeRef.current = null;
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     isDraggingRef.current = true;
-    dragStartX.current = e.touches[0].clientX;
-    scrollStartX.current = containerRef.current!.scrollLeft;
+    dragStartXRef.current = e.touches[0].clientX;
+    dragOffsetAtStartRef.current = offsetRef.current;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDraggingRef.current || !containerRef.current) return;
-    containerRef.current.scrollLeft =
-      scrollStartX.current - (e.touches[0].clientX - dragStartX.current);
-    wrapScroll();
+    if (!isDraggingRef.current) return;
+    const delta = e.touches[0].clientX - dragStartXRef.current;
+    offsetRef.current = dragOffsetAtStartRef.current - delta;
+    wrapOffset();
+    applyTransform();
   };
 
   const handleTouchEnd = () => {
     isDraggingRef.current = false;
+    lastTimeRef.current = null;
   };
 
   const handleWheel = (e: React.WheelEvent) => {
-    const el = containerRef.current;
-    if (!el) return;
-    el.scrollLeft += e.deltaY + e.deltaX;
+    offsetRef.current += e.deltaX + e.deltaY;
+    wrapOffset();
+    applyTransform();
   };
 
-  const virtualItems = virtualizer.getVirtualItems();
+  const totalTrackWidth = (width + gap) * repeatedImages.length;
 
   return (
     <div
@@ -160,26 +164,33 @@ export default function SmoothCarousel({
       className="scroll-container"
       style={{
         height,
+        overflow: "hidden",
+        cursor: "grab",
+        position: "relative",
       }}>
       <div
+        ref={trackRef}
         className="track"
         style={{
-          width: virtualizer.getTotalSize(),
+          display: "flex",
+          flexDirection: "row",
+          gap: `${gap}px`,
+          width: totalTrackWidth,
+          height: "100%",
+          willChange: "transform",
+          transform: "translateX(0)",
         }}>
-        {virtualItems.map((vItem) => {
-          const image = images[vItem.index % ORIGINAL_ITEMS];
-          return (
-            <div
-              key={vItem.key}
-              className="virtual-item"
-              style={{
-                left: vItem.start,
-                width: width,
-              }}>
-              <StaticCard image={image} />
-            </div>
-          );
-        })}
+        {repeatedImages.map((image, index) => (
+          <div
+            key={`${image.id}-${index}`}
+            style={{
+              width,
+              flexShrink: 0,
+              height: "100%",
+            }}>
+            <StaticCard image={image} />
+          </div>
+        ))}
       </div>
     </div>
   );
