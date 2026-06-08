@@ -92,12 +92,18 @@ export default function InfiniteCarousel({
   return (
     <div className="carousel-wrapper">
       {isLoadingBackward && (
-        <div className="edge-indicator edge-indicator-left" aria-hidden="true">
+        <div
+          data-testid="loading-backward-indicator"
+          className="edge-indicator edge-indicator-left"
+          aria-hidden="true">
           ‹
         </div>
       )}
       {isLoadingForward && (
-        <div className="edge-indicator edge-indicator-right" aria-hidden="true">
+        <div
+          data-testid="loading-forward-indicator"
+          className="edge-indicator edge-indicator-right"
+          aria-hidden="true">
           ›
         </div>
       )}
@@ -107,6 +113,7 @@ export default function InfiniteCarousel({
       <div
         ref={containerRef}
         className="scroll-container"
+        data-testid="infinite-carousel-container"
         style={{ height }}
         role="region"
         aria-label="Image carousel"
@@ -123,6 +130,7 @@ export default function InfiniteCarousel({
         {...dragHandlers}>
         <div
           className="track"
+          data-testid="infinite-carousel-track"
           style={{ width: virtualizer.getTotalSize() }}
           aria-hidden="true">
           {virtualItems.map((vItem) => (

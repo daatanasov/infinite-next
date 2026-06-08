@@ -26,6 +26,7 @@ function CarouselCard({ image, cardWidth, height }: CarouselCardProps) {
       role="img"
       aria-label={`Photo by ${image.author}`}>
       <div
+        data-testid="card-shimmer-skeleton"
         className={`shimmer-skeleton ${loadState === "loaded" ? "shimmer-hidden" : ""}`}
         aria-hidden="true"
       />
@@ -33,6 +34,7 @@ function CarouselCard({ image, cardWidth, height }: CarouselCardProps) {
       {loadState !== "error" && (
         <img
           src={src}
+          data-testid="carousel-card-image"
           alt={`${image.author}`}
           width={cardWidth}
           height={height}
