@@ -21,10 +21,13 @@ export default function LanguageSwitcher() {
   };
 
   return (
-    <div className="flex items-center gap-1 text-sm">
+    <div
+      className="flex items-center gap-1 text-sm"
+      data-testid="language-switcher">
       {routing.locales.map((loc) => (
         <button
           type="button"
+          data-testid={`locale-btn-${loc}`}
           key={loc}
           onClick={() => switchLocale(loc)}
           disabled={isPending}

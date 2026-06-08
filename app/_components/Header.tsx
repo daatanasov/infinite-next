@@ -21,7 +21,10 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo / Brand */}
-        <Link href="/" className="text-xl font-bold tracking-tight">
+        <Link
+          href="/"
+          data-testid="header-logo-link"
+          className="text-xl font-bold tracking-tight">
           🌀 InfiniteCarousel
         </Link>
 
@@ -31,6 +34,7 @@ export default function Header() {
             <Link
               key={href}
               href={href}
+              data-testid={`header-nav-link-${label}`}
               className={`text-sm font-medium transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 ${
                 pathname === href ? "text-indigo-600 dark:text-indigo-400" : ""
               }`}>
@@ -43,6 +47,7 @@ export default function Header() {
         {/* Mobile menu button */}
         <button
           type="button"
+          data-testid="button-mobile-navigation"
           className="md:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu">
@@ -78,6 +83,7 @@ export default function Header() {
               <Link
                 key={href}
                 href={href}
+                data-testid={`header-nav-mobile-link-${label}`}
                 onClick={() => setMenuOpen(false)}
                 className={`text-sm font-medium py-2 px-3 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 ${
                   pathname === href

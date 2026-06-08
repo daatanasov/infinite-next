@@ -124,12 +124,23 @@ export default function FetchCarousel({
   const virtualItems = virtualizer.getVirtualItems();
 
   return (
-    <div className="carousel-wrapper" style={{ position: "relative" }}>
+    <div
+      className="carousel-wrapper"
+      data-testid="fetch-carousel-wrapper"
+      style={{ position: "relative" }}>
       {isLoadingBackward && (
-        <span className="edge-indicator edge-indicator-left">←</span>
+        <span
+          data-testid="fetch-carouse-loading-backward-indicator"
+          className="edge-indicator edge-indicator-left">
+          ←
+        </span>
       )}
       {isLoadingForward && (
-        <span className="edge-indicator edge-indicator-right">→</span>
+        <span
+          data-testid="fetch-carouse-loading-forward-indicator"
+          className="edge-indicator edge-indicator-right">
+          →
+        </span>
       )}
 
       <div
@@ -148,11 +159,13 @@ export default function FetchCarousel({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={stopDrag}
+        data-testid="fetch-carousel-container"
         className="scroll-container"
         style={{
           height,
         }}>
         <div
+          data-testid="fetch-carousel-track"
           style={{
             width: virtualizer.getTotalSize(),
             height: "100%",

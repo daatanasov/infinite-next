@@ -56,7 +56,7 @@ The project demonstrates three distinct strategies for building smooth, performa
 
 | Category       | Technology                  |
 | -------------- | --------------------------- |
-| Framework      | Next.js 15 (App Router)     |
+| Framework      | Next.js 16 (App Router)     |
 | UI Library     | React 19                    |
 | Language       | TypeScript                  |
 | Styling        | TailwindCSS v4              |
@@ -152,6 +152,16 @@ Start the production server:
 
 ```bash
 npm start
+```
+
+---
+
+### Docker Development
+
+Create an docker image:
+
+```bash
+docker-compose up app-dev
 ```
 
 ---
