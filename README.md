@@ -1,8 +1,12 @@
 # 🌀 Infinite Image Carousel
 
-A showcase of **infinite image carousel** implementations built with **Next.js 15** (App Router), **React 19**, **TypeScript**, **TailwindCSS v4**, and **TanStack Virtual**.
+A showcase of **infinite image carousel** implementations built with **Next.js 16** (App Router), **React 19**, **TypeScript**, **TailwindCSS v4**, and **TanStack Virtual**.
 
 The project demonstrates three distinct strategies for building smooth, performant, and reusable infinite carousels that handle datasets of any size—from a handful of images to thousands.
+
+# Deployed via Vercel
+
+`https://infinite-next-3enlfib37-daatanasov.vercel.app/`
 
 ---
 
